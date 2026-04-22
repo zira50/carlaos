@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>💸 Movimientos</h2>
+
+<h3>Añadir movimiento</h3>
+
+<form method="POST" action="/add_movimiento">
+    <input type="date" name="date" required>
+
+    <select name="tipo" id="tipo">
+        <option value="income">Ingreso</option>
+        <option value="gasto">Gasto</option>
+    </select>
+
+    <select name="category" id="category">
+        {% for c in categories %}
+        <option value="{{ c[0] }}">{{ c[1] }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="number" step="0.01" name="amount" placeholder="Importe" required>
+
+    <select name="method">
+        <option value="Efectivo">💶 Efectivo</option>
+        <option value="Tarjeta">💳 Tarjeta</option>
+        <option value="Banco">🏦 Banco</option>
+    </select>
+
+    <input type="text" name="concept" placeholder="Concepto">
+
+    <button type="submit">Guardar</button>
+</form>
+
+<hr>
+
+<form method="GET">
+    <input type="text" name="search" placeholder="Buscar..." value="{{ search or '' }}">
+
+    <select name="tipo">
+        <option value="">Todas las categorías</option>
+
+        {% for c in categories %}
+        <option value="{{ c[0] }}" {% if tipo==c[0] %}selected{% endif %}>
+            {{ icons[c[0]] }} {{ c[1] }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Filtrar</button>
+</form>
+
+<hr>
+
+<table class="mov-table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Concepto</th>
+            <th>Categoría</th>
+            <th>Método</th>
+            <th class="right">Importe</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for m in movimientos %}
+        <tr>
+            <td class="date">{{ m["date"] }}</td>
+
+            <!-- ✔ CORREGIDO -->
+            <td>
+                {% if m["value"] >= 0 %}
+                    <span class="badge income">Ingreso</span>
+                {% else %}
+                    <span class="badge gasto">Gasto</span>
+                {% endif %}
+            </td>
+
+            <td class="concept">{{ m["title"] or "-" }}</td>
+
+            <td class="category">
+                {% if m["value"] < 0 %}
+                    {{ m["subtype"] }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td class="method">
+                {% if m["method"] == "Efectivo" %}💶{% endif %}
+                {% if m["method"] == "Tarjeta" %}💳{% endif %}
+                {% if m["method"] == "Banco" %}🏦{% endif %}
+            </td>
+
+            <td class="right">
+                {% set amount = m["value"] or 0 %}
+                <span class="amount {% if amount >= 0 %}income{% else %}gasto{% endif %}">
+                    {{ "+" if amount >= 0 else "" }}{{ amount }} €
+                </span>
+            </td>
+
+            <td class="actions">
+                <a href="/edit_movimiento/{{ m['id'] }}" class="btn-edit">✏️</a>
+
+                <form method="POST" action="/delete_event">
+                    <input type="hidden" name="id" value="{{ m['id'] }}">
+                    <button class="btn-delete">🗑</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- 🔥 JS para ocultar categoría en ingresos -->
+<script>
+const tipoSelect = document.getElementById("tipo");
+const categorySelect = document.getElementById("category");
+
+function toggleCategory() {
+    if (tipoSelect.value === "income") {
+        categorySelect.style.display = "none";
+    } else {
+        categorySelect.style.display = "block";
+    }
+}
+
+tipoSelect.addEventListener("change", toggleCategory);
+toggleCategory();
+</script>
+
+{% endblock %}

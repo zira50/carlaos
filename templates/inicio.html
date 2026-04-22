@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="calendar-header">
+
+    <h2>📅 Agenda</h2>
+
+    <div class="calendar-nav">
+        <a href="/inicio?month={{ prev_month }}&year={{ prev_year }}">◀</a>
+
+        <span class="calendar-title">
+            {{ month_name }} {{ year }}
+        </span>
+
+        <!-- 🔥 BOTÓN HOY -->
+        <a href="/inicio?month={{ today_month }}&year={{ today_year }}" class="today-btn">
+            Hoy
+        </a>
+
+        <a href="/inicio?month={{ next_month }}&year={{ next_year }}">▶</a>
+    </div>
+
+</div>
+
+<table class="calendar">
+    <thead>
+        <tr>
+            <th>Lun</th>
+            <th>Mar</th>
+            <th>Mié</th>
+            <th>Jue</th>
+            <th>Vie</th>
+            <th>Sáb</th>
+            <th>Dom</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for week in cal %}
+        <tr>
+            {% for day in week %}
+
+            {% set date_str = "" %}
+            {% if day != 0 %}
+            {% set date_str = year ~ '-' ~ "{:02d}".format(month) ~ '-' ~ "{:02d}".format(day) %}
+            {% endif %}
+
+            {% set is_holiday = false %}
+            {% set is_vacation = false %}
+
+            {% if day != 0 and events.get(date_str) %}
+            {% for e in events.get(date_str) %}
+            {% if e['type'] == 'holiday' %}
+            {% set is_holiday = true %}
+            {% elif e['type'] == 'vacation' %}
+            {% set is_vacation = true %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+
+            <td class="day-cell
+                {% if day != 0 and loop.index == 7 %} sunday {% endif %}
+                {% if day != 0 and date_str == today_str %} today {% endif %}
+                {% for e in events.get(date_str, []) %}
+                    {% if e['type'] == 'holiday' %} holiday {% endif %}
+                    {% if e['type'] == 'vacation' %} vacation {% endif %}
+                {% endfor %}
+            ">
+                <div class="day-number" {% if day !=0 %} onclick="openPopup('{{ date_str }}')" {% endif %}>
+                    {{ day if day != 0 else "" }}
+                </div>
+
+                {% if day != 0 %}
+                {% for e in events.get(date_str, []) %}
+                <div class="event">
+                    {% if e["type"] == "cita" and e["subtype"] == "nara" %}
+                    👶 {{ e["title"] }}
+                    {% elif e["type"] == "cita" and e["subtype"] == "otros" %}
+                    📍 {{ e["title"] }}
+                    {% elif e["type"] == "cita" %}
+                    🩺 {{ e["title"] }}
+                    {% elif e["type"] == "cumple" %}
+                    🎂 {{ e["title"] }}
+                    {% elif e["type"] == "tnp" %}
+                    {% if e["subtype"] == "full" %}
+                    🏠 Día completo
+                    {% elif e["subtype"] == "morning" %}
+                    ☀️ TNPM
+                    {% elif e["subtype"] == "afternoon" %}
+                    🌙 TNPT
+                    {% endif %}
+                    {% elif e["type"] == "holiday" %}
+                    🎉 {{ e["title"] }}
+                    {% elif e["type"] == "task" %}
+                    🧠 {{ e["title"] }}
+                    {% elif e["type"] == "guardia" %}
+                    ⏰ Guardia
+                    {% elif e["type"] == "exc" %}
+                    ⚡ {{ e["value"] or 0 }}h
+                    {% endif %}
+
+                    {% if e["time"] %}
+                    ({{ e["time"] }})
+                    {% endif %}
+
+                </div>
+                {% endfor %}
+                {% endif %}
+            </td>
+
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="overlay" class="overlay"></div>
+
+<div id="popup" class="popup">
+    <div style="text-align:right;">
+        <button type="button" onclick="closePopup()" style="font-size:18px;">❌</button>
+    </div>
+
+    <h3 id="popup_title">📅 Día</h3>
+
+    <form id="eventForm">
+        <input type="hidden" name="date" id="popup_date">
+        <input type="hidden" name="edit_id" id="edit_id">
+
+        <!-- 🔹 TIPO -->
+        <select name="tipo" id="tipo" onchange="updateForm()">
+            <option value="tnp">🏠 TNP</option>
+            <option value="cita">📍 Cita</option>
+            <option value="cumple">🎂 Cumpleaños</option>
+            <option value="holiday">🎉 Festivo</option>
+            <option value="task">🧠 Tarea</option>
+            <option value="guardia">⏰ Guardia</option>
+            <option value="exc">⚡ EXC</option>
+        </select>
+
+        <!-- 🔹 SUBTIPO (FUERA 👇) -->
+        <select name="subtype" id="subtype" style="margin-top:10px; display:none;">
+            <option value="medico">🩺 Médico</option>
+            <option value="otros">📍 Otros</option>
+            <option value="nara">👶 Nara</option>
+        </select>
+
+        <!-- 📝 TEXTO -->
+        <input type="text" name="title" id="title_input" placeholder="Texto" style="margin-top:10px;">
+
+        <!-- ⏰ HORA -->
+        <input type="time" name="time" id="time_input" style="margin-top:10px; display:none;">
+
+        <!-- ⚡ EXC -->
+        <input type="number" step="0.5" name="hours" id="hours_input" placeholder="Horas EXC"
+            style="margin-top:10px; display:none;">
+
+        <button type="submit">Guardar</button>
+        <button type="button" onclick="closePopup()">Cerrar</button>
+    </form>
+
+    <hr>
+    <div id="popup_msg" style="margin:10px 0; font-weight:bold;"></div>
+    <div id="day_events"></div>
+</div>
+
+<script src="{{ url_for('static', filename='js/agenda.js', v=time.time()) }}"></script>
+
+{% endblock %}

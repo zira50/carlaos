@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 style="margin-bottom:20px;">📊 Insights</h2>
+
+<!-- 📅 EVENTOS IMPORTANTES -->
+<div class="card">
+    <h3>📅 Eventos importantes</h3>
+
+    <div class="events-grid">
+
+        <div>
+            <h4>🎂 Cumpleaños</h4>
+            {% for e in cumples %}
+            <div class="event-line">
+                {{ e["date"][8:10] }}/{{ e["date"][5:7] }} - {{ e["title"] }}
+            </div>
+            {% else %}
+            <p class="empty">No hay cumpleaños</p>
+            {% endfor %}
+        </div>
+
+        <div>
+            <h4>📌 Citas</h4>
+            {% for e in citas %}
+            <div class="event-line">
+                {{ e["date"][8:10] }}/{{ e["date"][5:7] }} - {{ e["title"] }}
+                {% if e["time"] %} ({{ e["time"] }}) {% endif %}
+            </div>
+            {% else %}
+            <p class="empty">No hay citas</p>
+            {% endfor %}
+        </div>
+
+        <div>
+            <h4>👶 Nara</h4>
+            {% for e in nara_events %}
+            <div class="event-line">
+                {{ e["date"][8:10] }}/{{ e["date"][5:7] }} - {{ e["title"] }}
+                {% if e["time"] %} ({{ e["time"] }}) {% endif %}
+            </div>
+            {% else %}
+            <p class="empty">No hay eventos</p>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+<!-- 🧠 TAREAS -->
+<div class="card">
+    <h3>🧠 Tareas</h3>
+
+    {% if tasks %}
+    {% for t in tasks %}
+    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+
+        {% if t["title"].startswith("✔ ") %}
+        <span style="text-decoration: line-through;">
+            ☑ {{ t["title"][2:] }}
+        </span>
+        {% else %}
+        <span>☐ {{ t["title"] }}</span>
+
+        <form method="POST" action="/complete_task" style="display:inline;">
+            <input type="hidden" name="id" value="{{ t[" id"] }}">
+            <button class="mini-btn">✔</button>
+        </form>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="empty">No hay tareas 👌</p>
+    {% endif %}
+</div>
+
+<!-- 🎯 KPI PRINCIPALES -->
+<div class="cards">
+
+    <div class="card">
+        <h4>🏠 TNP</h4>
+        <p>{{ tnp_used }}</p>
+        <small>{{ tnp_left }} disponibles</small>
+    </div>
+
+    <div class="card">
+        <h4>🌴 Vacaciones</h4>
+        <p>{{ vac_used }}</p>
+        <small>{{ vac_left }} disponibles</small>
+    </div>
+
+    <div class="card">
+        <h4>⏰ Guardias</h4>
+        <p>{{ guardias }}</p>
+    </div>
+
+    <div class="card">
+        <h4>⚡ EXC</h4>
+        <p>{{ exc_used }}h</p>
+        <small>{{ exc_left }} disponibles</small>
+    </div>
+
+</div>
+
+<!-- 💰 FINANZAS (COLAPSABLE) -->
+<div class="card">
+    <h3 onclick="toggleFinanzas()" style="cursor:pointer;">
+        💰 Finanzas (click para mostrar)
+    </h3>
+
+    <div id="finanzas-content" style="display:none;">
+
+        <div class="cards">
+
+            <div class="card">
+                <h4>💰 Saldo</h4>
+                <p style="font-size:26px; color:#1e40af;">{{ saldo }} €</p>
+            </div>
+
+            <div class="card">
+                <h4>📈 Ingresos</h4>
+                <p style="color:green;">{{ ingresos }} €</p>
+            </div>
+
+            <div class="card">
+                <h4>📉 Gastos</h4>
+                <p style="color:#ff3b3b;">{{ gastos * -1 }} €</p>
+            </div>
+
+        </div>
+
+        <!-- 💸 GASTOS -->
+        <div class="card">
+            <h4>💸 ¿En qué se va el dinero?</h4>
+
+            {% if gastos_categoria %}
+            {% for g in gastos_categoria %}
+            <div style="margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; font-size:14px;">
+                    <span>{{ g["subtype"] }}</span>
+                    <span>{{ g["total"] * -1 }} €</span>
+                </div>
+
+                <div class="gasto-bar">
+                    <div class="gasto-fill" style="width:{{ (g['total'] * -1) / max_gasto * 100 }}%;">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p>No hay gastos todavía 👌</p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

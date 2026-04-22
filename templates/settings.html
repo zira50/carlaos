@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>⚙️ Configuración</h2>
+
+<div class="settings-grid">
+
+    <!-- 🔐 SEGURIDAD -->
+    <div class="card">
+        <h3>🔐 Seguridad</h3>
+
+        <form method="POST" action="{{ url_for('settings.change_pin') }}" class="form-column">
+            <input type="password" name="current_pin" placeholder="PIN actual">
+            <input type="password" name="new_pin" placeholder="Nuevo PIN">
+            <input type="password" name="confirm_pin" placeholder="Repite PIN">
+
+            <button type="submit">Cambiar PIN</button>
+        </form>
+    </div>
+
+    <!-- 🌴 VACACIONES -->
+    <div class="card">
+        <h3>🌴 Vacaciones</h3>
+
+        <p class="card-desc">Añade un rango de días que quieres reservar como vacaciones.</p>
+
+        <form method="POST" class="form-row">
+            <input type="hidden" name="action" value="add_vacation">
+
+            <input type="date" name="start" required>
+            <span class="range-sep">→</span>
+            <input type="date" name="end" required>
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+
+    <!-- 🧠 TRABAJO -->
+    <div class="card">
+        <h3>🧠 Configuración laboral</h3>
+
+        <form method="POST" class="form-column">
+            <input type="hidden" name="action" value="work_config">
+
+            <label>Horas excedentes</label>
+            <input type="number" name="hours" value="{{ hours }}">
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+
+    <!-- ♻️ SISTEMA -->
+    <div class="card danger">
+        <h3>♻️ Sistema</h3>
+
+        <p class="card-desc">Acciones delicadas. Úsalas con cuidado.</p>
+
+        <div class="system-actions">
+
+            <!-- 💾 BACKUP -->
+            <form method="POST" action="{{ url_for('settings.backup') }}">
+                <button type="submit" class="full-btn">💾 Crear backup</button>
+            </form>
+
+            <!-- ♻️ RESTORE -->
+            <form method="POST" action="{{ url_for('settings.restore_backup') }}" class="form-column">
+
+                <select name="backup_file" required>
+                    <option value="">Selecciona backup</option>
+                    {% for b in backups %}
+                    <option value="{{ b }}">{{ b.split('\\')[-1] }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="danger-btn"
+                    onclick="return confirm('Esto sobrescribirá la base de datos. ¿Seguro?')">
+                    ♻️ Restaurar backup
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

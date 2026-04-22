@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>🧠 Tareas</h2>
+
+<form method="POST" class="form-card">
+    <input type="text" name="title" placeholder="Nueva tarea..." required>
+    <button type="submit">Añadir</button>
+</form>
+
+<hr>
+
+{% for t in tasks %}
+
+<div class="task-card">
+
+    <div>
+        {% if t[2] == "done" %}
+            <span class="task-done">
+                {{ t[1] }}
+            </span>
+        {% else %}
+            {{ t[1] }}
+        {% endif %}
+    </div>
+
+    <div class="task-actions">
+        {% if t[2] != "done" %}
+            <a href="/tasks?complete={{ t[0] }}">✅</a>
+        {% endif %}
+        <a href="/tasks?delete={{ t[0] }}">🗑️</a>
+    </div>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}

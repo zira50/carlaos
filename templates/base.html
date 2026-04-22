@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CarlaOS</title>
+
+    <!-- 🌐 FUENTE -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
+            color: #333;
+        }
+
+        /* 🧭 MENU */
+        .menu {
+            background: #111;
+            padding: 14px 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .menu strong {
+            color: white;
+        }
+
+        .menu a {
+            color: #bbb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .menu a:hover {
+            color: white;
+        }
+
+        /* 📦 CONTENIDO */
+        .content {
+            padding: 25px;
+        }
+
+        /* 🧱 TARJETAS */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 🔘 BOTONES */
+        button {
+            background: #111;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* INPUTS */
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="menu">
+        <strong>CarlaOS</strong>
+        <a href="/inicio">📅 Inicio</a>
+        <a href="/movimientos">💸 Movimientos</a>
+        <a href="/insights">📊 Insights</a>
+        <a href="/settings">⚙️ Settings</a>
+        <a href="/logout">🚪 Salir</a>
+    </div>
+
+    <div class="content">
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div id="toast-container">
+            {% for message in messages %}
+            <div class="toast">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+    </div>
+
+</body>
+
+<script src="{{ url_for('static', filename='js/insights.js') }}"></script>
+
+</html>
