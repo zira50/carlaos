@@ -148,11 +148,19 @@ def get_events():
     return jsonify([dict(r) for r in rows])
 
 
+import os
+import sys
+
+def get_data_path():
+    if getattr(sys, 'frozen', False):
+        return sys._MEIPASS
+    return os.path.abspath(".")
+
 def load_holidays():
     import json
-    import os
 
-    path = os.path.join("data", "holidays_2026.json")
+    base_path = get_data_path()
+    path = os.path.join(base_path, "data", "holidays_2026.json")
 
     if not os.path.exists(path):
         return {}

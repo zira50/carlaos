@@ -18,7 +18,7 @@ calendar.setfirstweekday(calendar.MONDAY)
 # HELPERS
 # -------------------------
 def open_browser():
-    webbrowser.open("http://127.0.0.1:5000")
+    webbrowser.open("http://127.0.0.1:5000/login?app=1")
 
 def get_base_path():
     if getattr(sys, 'frozen', False):
