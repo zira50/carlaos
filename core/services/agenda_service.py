@@ -1,4 +1,5 @@
 from core.database import get_connection
+from core.db_state import mark_db_changed
 
 # =============================================
 # 🔧 HELPER DB
@@ -41,6 +42,7 @@ def save_cita(data):
             ))
 
         conn.commit()
+        mark_db_changed()
         return {"success": True}
 
     except Exception as e:
@@ -70,7 +72,11 @@ def save_cumple(data):
             )
 
         conn.commit()
+        mark_db_changed()
         return {"success": True}
+
+    except Exception as e:
+        return {"success": False, "msg": str(e)}
 
     finally:
         conn.close()
@@ -93,6 +99,7 @@ def save_tnp(data):
                 (nuevo, data.get("edit_id"))
             )
             conn.commit()
+            mark_db_changed()
             return {"success": True}
 
         c.execute("""
@@ -117,7 +124,11 @@ def save_tnp(data):
         )
 
         conn.commit()
+        mark_db_changed()
         return {"success": True}
+
+    except Exception as e:
+        return {"success": False, "msg": str(e)}
 
     finally:
         conn.close()
@@ -143,14 +154,18 @@ def save_task(data):
             """, (data["date"], "task", data.get("title")))
 
         conn.commit()
+        mark_db_changed()
         return {"success": True}
+
+    except Exception as e:
+        return {"success": False, "msg": str(e)}
 
     finally:
         conn.close()
 
 
 # =============================================
-# 🎉 HOLIDAY (manuales + validación)
+# 🎉 HOLIDAY
 # =============================================
 
 def save_holiday(data):
@@ -168,7 +183,6 @@ def save_holiday(data):
                 (nombre, data.get("edit_id"))
             )
         else:
-            # evitar duplicados
             c.execute("""
                 SELECT 1 FROM events
                 WHERE date=? AND type='holiday' AND LOWER(title)=?
@@ -183,7 +197,11 @@ def save_holiday(data):
             """, (data["date"], "holiday", nombre))
 
         conn.commit()
+        mark_db_changed()
         return {"success": True}
+
+    except Exception as e:
+        return {"success": False, "msg": str(e)}
 
     finally:
         conn.close()
@@ -211,14 +229,18 @@ def save_guardia(data):
             )
 
         conn.commit()
+        mark_db_changed()
         return {"success": True}
+
+    except Exception as e:
+        return {"success": False, "msg": str(e)}
 
     finally:
         conn.close()
 
 
 # =============================================
-# ⚡ EXC (por si lo usas)
+# ⚡ EXC
 # =============================================
 
 def save_exc(data):
@@ -239,7 +261,11 @@ def save_exc(data):
             )
 
         conn.commit()
+        mark_db_changed()
         return {"success": True}
+
+    except Exception as e:
+        return {"success": False, "msg": str(e)}
 
     finally:
         conn.close()
@@ -259,7 +285,9 @@ def save_event(data):
         "task": save_task,
         "holiday": save_holiday,
         "guardia": save_guardia,
-        "exc": save_exc
+        "exc": save_exc,
+        "period": save_period,
+        "vacation_range": save_vacation_range,
     }
 
     handler = handlers.get(tipo)
@@ -268,6 +296,68 @@ def save_event(data):
         return {"success": False, "msg": "Tipo no válido"}
 
     return handler(data)
+
+# =============================================
+# REGLA
+# =============================================
+
+def save_period(data):
+    conn, c = db()
+
+    try:
+        c.execute("""
+            INSERT INTO events (date, type, title)
+            VALUES (?, ?, ?)
+        """, (
+            data["date"],
+            "period",
+            "Regla"
+        ))
+
+        conn.commit()
+        mark_db_changed()
+
+        return {"success": True}
+
+    except Exception as e:
+        return {"success": False, "msg": str(e)}
+
+    finally:
+        conn.close()
+
+from datetime import datetime, timedelta
+
+def save_vacation_range(data):
+    conn, c = db()
+
+    try:
+        start = datetime.strptime(data["start"], "%Y-%m-%d")
+        end = datetime.strptime(data["end"], "%Y-%m-%d")
+
+        current = start
+
+        while current <= end:
+            date_str = current.strftime("%Y-%m-%d")
+
+            # 🚫 SALTAR domingos y festivos
+            if not is_holiday_or_sunday(date_str):
+                c.execute("""
+                    INSERT INTO events (date, type)
+                    VALUES (?, ?)
+                """, (date_str, "vacation"))
+
+            current += timedelta(days=1)
+
+        conn.commit()
+        mark_db_changed()
+
+        return {"success": True}
+
+    except Exception as e:
+        return {"success": False, "msg": str(e)}
+
+    finally:
+        conn.close()
 
 
 # =============================================

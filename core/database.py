@@ -2,6 +2,8 @@ import sqlite3
 import os
 import sys
 
+from core.db_state import mark_db_changed
+
 # =========================================================
 # 📁 PATH SEGURO (PORTABLE READY)
 # =========================================================
@@ -9,19 +11,20 @@ import sys
 def get_base_path():
     if getattr(sys, 'frozen', False):
         base = os.path.dirname(sys.executable)
-        data_path = os.path.join(base, "data")
+    else:
+        base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-        if not os.path.exists(data_path):
-            os.makedirs(data_path)
+    data_path = os.path.join(base, "data")
 
-        return data_path
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
 
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    return data_path
 
 
 def get_db_path():
     path = os.path.join(get_base_path(), "database.db")
-    print("DB PATH:", path)  # 👈 opcional
+    print("DB PATH:", path)
     return path
     
 
@@ -126,6 +129,8 @@ def add_event(date, type, title=None, time=None, subtype=None, value=None):
     conn.commit()
     conn.close()
 
+    mark_db_changed()
+
 
 def get_events():
     conn = get_connection()
@@ -152,6 +157,8 @@ def add_transaction(type, amount, concept, date, payment_method=None, category=N
 
     conn.commit()
     conn.close()
+
+    mark_db_changed()
 
 
 def get_transactions():
@@ -183,6 +190,8 @@ def add_task(title, status="pending", scheduled_date=None):
 
     conn.commit()
     conn.close()
+
+    mark_db_changed()
 
 
 def get_tasks():

@@ -97,6 +97,10 @@
                     ⏰ Guardia
                     {% elif e["type"] == "exc" %}
                     ⚡ {{ e["value"] or 0 }}h
+                    {% elif e["type"] == "period" %}
+                    🩹 Regla
+                    {% elif e["type"] == "vacation" %}
+                    🌴
                     {% endif %}
 
                     {% if e["time"] %}
@@ -136,6 +140,7 @@
             <option value="task">🧠 Tarea</option>
             <option value="guardia">⏰ Guardia</option>
             <option value="exc">⚡ EXC</option>
+            <option value="period">🩹 Regla</option>
         </select>
 
         <!-- 🔹 SUBTIPO (FUERA 👇) -->

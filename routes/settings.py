@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from core.database import get_connection, get_db_path
 from core.services.backup_service import create_backup, get_db_file
 from datetime import datetime, timedelta
+from core.services.agenda_service import is_holiday_or_sunday
 import os
 import shutil
 
@@ -38,14 +39,24 @@ def settings_page():
             d2 = datetime.strptime(end, "%Y-%m-%d")
 
             count = 0
-
             while d1 <= d2:
-                c.execute(
-                    "INSERT INTO events (date, type) VALUES (?, 'vacation')",
-                    (d1.strftime("%Y-%m-%d"),)
-                )
+                date_str = d1.strftime("%Y-%m-%d")
+
+                if not is_holiday_or_sunday(date_str):
+                    # 🔍 evitar duplicados
+                    c.execute("""
+                        SELECT 1 FROM events
+                        WHERE date=? AND type='vacation'
+                    """, (date_str,))
+
+                    if not c.fetchone():
+                        c.execute(
+                            "INSERT INTO events (date, type) VALUES (?, 'vacation')",
+                            (date_str,)
+                        )
+                        count += 1
+
                 d1 += timedelta(days=1)
-                count += 1
 
             flash(f"🌴 Vacaciones guardadas ({count} días)")
 
@@ -58,7 +69,7 @@ def settings_page():
     # -------------------------
     # 📂 LISTAR BACKUPS
     # -------------------------
-    backup_dir = os.path.dirname(get_db_file())
+    backup_dir = os.path.join(os.path.dirname(get_db_file()), "backups")
 
     backups = [
         os.path.join(backup_dir, f)

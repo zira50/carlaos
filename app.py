@@ -1,12 +1,18 @@
 from flask import Flask, redirect, url_for, session, request
 from core.database import get_connection
 from datetime import date
+from core.services.backup_service import create_backup
+from core.db_state import has_db_changed, reset_db_changed
+from core.services.backup_service import create_backup
+from core.database import init_db
+
 import calendar
 import sys
 import os
 import webbrowser
 import threading
 import locale
+import atexit
 
 # -------------------------
 # CONFIG
@@ -40,6 +46,8 @@ app = Flask(
 )
 
 app.config['SECRET_KEY'] = "carlaos_secret"
+
+init_db()
 
 # -------------------------
 # BLUEPRINTS
@@ -126,7 +134,27 @@ def init_db():
     conn.commit()
     conn.close()
 
-init_db()
+
+# =========================================================
+# CREAR BACKUP DE LA BBDD
+# =========================================================
+
+import atexit
+from core.services.backup_service import create_backup
+from core.db_state import has_db_changed, reset_db_changed
+
+def on_exit():
+    if has_db_changed():
+        print("💾 Cambios detectados, creando backup...")
+        try:
+            create_backup()
+            reset_db_changed()
+        except Exception as e:
+            print("❌ Error creando backup:", e)
+    else:
+        print("🧘 Sin cambios, no se crea backup")
+
+atexit.register(on_exit)
 
 # =========================================================
 # ▶️ RUN

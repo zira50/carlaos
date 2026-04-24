@@ -77,7 +77,12 @@ function loadEvents(date) {
                 else if (e.type === "guardia") {
                     text = "⏰ Guardia";
                 }
-
+                else if (e.type === "period") {
+                    text = "🩹 Regla";
+                }
+                else if (e.type === "vacation") {
+                    text = "🌴 Vacaciones";
+                }
                 else {
                     text = "📌 " + (e.title || e.type);
                 }
@@ -220,10 +225,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(data => {
                     console.log("RESPUESTA:", data);
 
-                    if (!data.ok) {
-                        showMessage(data.msg, true);
+                    if (!data.success) {
+                        showMessage(data.msg || "Error al guardar", true);
                     } else {
                         showMessage("✅ Guardado", false);
+                        location.reload();
+
+                        // 🔄 refrescar eventos del día
                         openPopup(document.getElementById("popup_date").value);
                     }
                 })

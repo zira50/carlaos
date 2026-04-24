@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 from core.database import get_connection
 from datetime import datetime, date
 from core.services.agenda_service import save_cita, save_cumple, save_tnp
-from flask import redirect, url_for
+from flask import redirect, url_for, request, session
 
 import time
 import json
@@ -57,7 +57,10 @@ def inicio():
 
     month_name = calendar.month_name[month].capitalize()
 
-    c.execute("SELECT * FROM events")
+    c.execute("""
+    SELECT * FROM events
+    WHERE strftime('%m', date)=? AND strftime('%Y', date)=?
+    """, (f"{month:02d}", str(year)))
     rows = c.fetchall()
 
     events = {}
@@ -110,7 +113,7 @@ def delete_event():
     conn.commit()
     conn.close()
 
-    return redirect(url_for("movimientos.movimientos"))
+    return redirect(request.referrer or url_for("agenda.inicio"))
 
 
 # =========================================================
@@ -127,7 +130,7 @@ def edit_event():
     conn.commit()
     conn.close()
 
-    return redirect(request.referrer or url_for("movimientos.movimientos"))
+    return redirect(request.referrer or url_for("agenda.inicio"))
 
 
 # =========================================================

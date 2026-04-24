@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 style="margin-bottom:20px;">📊 Insights</h2>
-
 <!-- 📅 EVENTOS IMPORTANTES -->
 <div class="card">
     <h3>📅 Eventos importantes</h3>
@@ -63,7 +61,7 @@
         <span>☐ {{ t["title"] }}</span>
 
         <form method="POST" action="/complete_task" style="display:inline;">
-            <input type="hidden" name="id" value="{{ t[" id"] }}">
+            <input type="hidden" name="id" value="{{ t['id'] }}">
             <button class="mini-btn">✔</button>
         </form>
         {% endif %}

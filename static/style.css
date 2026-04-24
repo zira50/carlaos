@@ -66,9 +66,10 @@ body {
 }
 
 .card h4 {
-    font-size: 14px;
+    font-size: 16px;
     color: #777;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-weight: 600;
 }
 
 .card p {
@@ -272,8 +273,8 @@ button[type="submit"]:hover {
 }
 
 .event-line {
-    font-size: 13px;
-    margin-bottom: 6px;
+    font-size: 12px;
+    margin-bottom: 5px;
 }
 
 .empty {
